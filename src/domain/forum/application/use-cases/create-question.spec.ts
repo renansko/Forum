@@ -1,13 +1,19 @@
 import { UniqueEntityID } from '@/core/entities/unique-entity-id'
 import { CreateQuestionUseCase } from './create-question'
 import { InMemoryQuestionRepository } from 'test/repositories/in-memory-question-repository'
+import { InMemoryQuestionAttachmentRepository } from 'test/repositories/in-memory-question-attachment-repository'
 
 let inMemoryQuestionRepository: InMemoryQuestionRepository
+let inMemoryQuestionAttachmentRepository: InMemoryQuestionAttachmentRepository
 let sut: CreateQuestionUseCase
 
 describe('Create Question', () => {
   beforeEach(() => {
-    inMemoryQuestionRepository = new InMemoryQuestionRepository()
+    inMemoryQuestionAttachmentRepository =
+      new InMemoryQuestionAttachmentRepository()
+    inMemoryQuestionRepository = new InMemoryQuestionRepository(
+      inMemoryQuestionAttachmentRepository,
+    )
     sut = new CreateQuestionUseCase(inMemoryQuestionRepository)
   })
 
@@ -21,8 +27,12 @@ describe('Create Question', () => {
 
     expect(result.isRight()).toBe(true)
     expect(inMemoryQuestionRepository.items[0]).toEqual(result.value?.question)
-    expect(inMemoryQuestionRepository.items[0].attachments).toHaveLength(2)
-    expect(inMemoryQuestionRepository.items[0].attachments).toEqual([
+    expect(
+      inMemoryQuestionRepository.items[0].attachments.currentItems,
+    ).toHaveLength(2)
+    expect(
+      inMemoryQuestionRepository.items[0].attachments.currentItems,
+    ).toEqual([
       expect.objectContaining({ attachmentId: new UniqueEntityID('1') }),
       expect.objectContaining({ attachmentId: new UniqueEntityID('2') }),
     ])
