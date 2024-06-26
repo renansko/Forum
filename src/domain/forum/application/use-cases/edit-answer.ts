@@ -3,11 +3,16 @@ import { Answer } from '../../enterprise/entities/answers'
 import { AnswersRepository } from '../repositories/answers-repository'
 import { NotAllowedError } from './errors/not-allowed-error'
 import { ResourceNotFoundError } from './errors/resource-not-found-error'
+import { AnswerAttachmentList } from '../../enterprise/entities/answer-attachment-list'
+import { AnswerAttachmentRepository } from '../repositories/answer-attachment-repository'
+import { UniqueEntityID } from '@/core/entities/unique-entity-id'
+import { AnswerAttachment } from '../../enterprise/entities/answer-attachment'
 
 interface EditAnswerUseCaseRequest {
   authorId: string
   answerId: string
   content: string
+  attachmentsIds: string[]
 }
 
 type EditAnswerUseCaseResponse = Either<
@@ -16,12 +21,16 @@ type EditAnswerUseCaseResponse = Either<
 >
 
 export class EditAnswerUseCase {
-  constructor(private answerRepository: AnswersRepository) {}
+  constructor(
+    private answerRepository: AnswersRepository,
+    private answerAttachmentsRepository: AnswerAttachmentRepository,
+  ) {}
 
   async execute({
     authorId,
     content,
     answerId,
+    attachmentsIds,
   }: EditAnswerUseCaseRequest): Promise<EditAnswerUseCaseResponse> {
     const answer = await this.answerRepository.findById(answerId)
 
@@ -32,6 +41,24 @@ export class EditAnswerUseCase {
     if (authorId !== answer.authorId.toString()) {
       return left(new NotAllowedError())
     }
+
+    const currentAnswerAttachments =
+      await this.answerAttachmentsRepository.findManyByAnswerId(answerId)
+
+    const answerAttachmentList = new AnswerAttachmentList(
+      currentAnswerAttachments,
+    )
+
+    const answerAttachment = attachmentsIds.map((attachmentId) => {
+      return AnswerAttachment.create({
+        attachmentId: new UniqueEntityID(attachmentId),
+        answerId: answer.id,
+      })
+    })
+
+    answerAttachmentList.update(answerAttachment)
+
+    answer.attachments = answerAttachmentList
 
     answer.content = content
 

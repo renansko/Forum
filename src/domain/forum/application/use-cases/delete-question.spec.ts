@@ -7,15 +7,15 @@ import { InMemoryQuestionAttachmentRepository } from 'test/repositories/in-memor
 import { makeQuestionAttachment } from 'test/factories/make-question-attachment'
 
 let inMemoryQuestionRepository: InMemoryQuestionRepository
-let inMemortQuestionAttachmentRepository: InMemoryQuestionAttachmentRepository
+let inMemoryQuestionAttachmentRepository: InMemoryQuestionAttachmentRepository
 let sut: DeleteQuestionUseCase
 
 describe('Delete Question by id', () => {
   beforeEach(() => {
-    inMemortQuestionAttachmentRepository =
+    inMemoryQuestionAttachmentRepository =
       new InMemoryQuestionAttachmentRepository()
     inMemoryQuestionRepository = new InMemoryQuestionRepository(
-      inMemortQuestionAttachmentRepository,
+      inMemoryQuestionAttachmentRepository,
     )
 
     sut = new DeleteQuestionUseCase(inMemoryQuestionRepository)
@@ -31,7 +31,7 @@ describe('Delete Question by id', () => {
 
     inMemoryQuestionRepository.create(newQuestion)
 
-    inMemortQuestionAttachmentRepository.items.push(
+    inMemoryQuestionAttachmentRepository.items.push(
       makeQuestionAttachment({
         questionId: newQuestion.id,
         attachmentId: new UniqueEntityID('1'),
@@ -48,7 +48,7 @@ describe('Delete Question by id', () => {
     })
 
     expect(inMemoryQuestionRepository.items).toHaveLength(0)
-    expect(inMemortQuestionAttachmentRepository.items).toHaveLength(0)
+    expect(inMemoryQuestionAttachmentRepository.items).toHaveLength(0)
   })
 
   it('Should not be possible delete a question when you not a author of this question', async () => {
